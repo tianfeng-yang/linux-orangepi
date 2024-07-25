@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-orangepi-3b.dtb
-dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-orangepi-3b-v2.1.dtb
+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-orangepi-3b-v2.dtb
 
 subdir-y       := $(dts-dirs) overlay
