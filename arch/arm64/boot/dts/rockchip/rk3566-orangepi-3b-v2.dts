@@ -252,7 +252,7 @@
 	snps,reset-delays-us = <0 50000 200000>;
 	tx_delay = <0x30>;
 	rx_delay = <0x10>;
-	phy-handle = <&rgmii_phy0>;
+	phy-handle = <&rgmii_phy1>;
 	status = "okay";
 };
 
@@ -600,9 +600,9 @@
 };
 
 &mdio1 {
-	rgmii_phy0: phy@0 {
+	rgmii_phy1: ethernet-phy@1 {
 		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <0x0>;
+		reg = <0x1>;
 	};
 };
 
@@ -800,13 +800,15 @@
 
 &sdmmc1 {
 	#address-cells = <1>;
-        #size-cells = <0>;
+	#size-cells = <0>;
 	bus-width = <4>;
 	disable-wp;
 	cap-sd-highspeed;
 	cap-sdio-irq;
 	keep-power-in-suspend;
 	mmc-pwrseq = <&sdio_pwrseq>;
+	no-mmc;
+	no-sd;
 	non-removable;
 	pinctrl-names = "default";
 	pinctrl-0 = <&sdmmc1_bus4 &sdmmc1_clk &sdmmc1_cmd>;
@@ -814,7 +816,7 @@
 	vmmc-supply = <&vcc_3v3>;
         vqmmc-supply = <&vcc_1v8>;
 	status = "okay";
-	
+
 	wifi@1 {
 		compatible = "brcm,bcm43456-fmac", "brcm,bcm4329-fmac";
 		reg = <1>;
