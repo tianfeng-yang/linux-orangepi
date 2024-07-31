@@ -7,6 +7,7 @@
  * Chen-Zhi (Roger Chen)  <roger.chen@rock-chips.com>
  */
 
+#include <asm/system_info.h>
 #include <linux/stmmac.h>
 #include <linux/bitops.h>
 #include <linux/clk.h>
@@ -24,6 +25,8 @@
 #include <linux/pm_runtime.h>
 
 #include "stmmac_platform.h"
+
+static int dev_num = 0;
 
 struct rk_priv_data;
 struct rk_gmac_ops {
@@ -1807,6 +1810,41 @@ static void rk_fix_speed(void *priv, unsigned int speed, unsigned int mode)
 	}
 }
 
+/*
+ * Create an ethernet address from the system serial number.
+ */
+static int __init etherm_addr(char *addr)
+{
+	unsigned int serial;
+
+	if (system_serial_low == 0 && system_serial_high == 0)
+		return -ENODEV;
+
+	serial = system_serial_low | system_serial_high;
+
+	addr[0] = 0;
+	addr[1] = 0;
+	addr[2] = 0xa4;
+	addr[3] = 0x10 + (serial >> 24);
+	addr[4] = serial >> 16;
+	addr[5] = (serial >> 8) + dev_num;
+
+	dev_num++;
+
+	return 0;
+}
+
+static void rk_get_eth_addr(void *priv, unsigned char *addr)
+{
+	struct rk_priv_data *bsp_priv = priv;
+	struct device *dev = &bsp_priv->pdev->dev;
+
+	if (!is_valid_ether_addr(addr)) {
+		etherm_addr(addr);
+		dev_info(dev, "%s: use serial to generate eth mac address: %pM\n", __func__, addr);
+	}
+}
+
 static int rk_gmac_probe(struct platform_device *pdev)
 {
 	struct plat_stmmacenet_data *plat_dat;
@@ -1834,6 +1872,7 @@ static int rk_gmac_probe(struct platform_device *pdev)
 	if (!plat_dat->has_gmac4)
 		plat_dat->has_gmac = true;
 	plat_dat->fix_mac_speed = rk_fix_speed;
+	plat_dat->get_eth_addr = rk_get_eth_addr;
 
 	plat_dat->bsp_priv = rk_gmac_setup(pdev, plat_dat, data);
 	if (IS_ERR(plat_dat->bsp_priv)) {
